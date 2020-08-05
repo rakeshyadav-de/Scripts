@@ -1,0 +1,56 @@
+# configrations
+$path = "C:\Users\ryadav-de\Desktop\file\file.csv" # change it to location where you want to store it.
+
+$linkedServices= @('test','test') #insert linkedSevice which you want to search 
+
+$resourceGroup = "" #initialize the resource group
+
+$dataFactoy = "" #initialize the datafactory to look into
+
+
+$plList = @{}
+$pipleline
+$linkedService
+
+$myList = Get-AzureRmDataFactoryV2Pipeline -ResourceGroupName $resourceGroup  -DataFactoryName $dataFactoy |   Select Name,@{Name='LinkedServices'; Expression={$_.Activities.LinkedServiceName}}
+
+#$myList
+$a = 1
+foreach ($link in $linkedServices)
+{
+Write-Host("loop no "+ $a)
+foreach ($ls in $myList)
+ {
+    
+
+    foreach ($mem in $ls.LinkedServices)
+    {
+        
+        if($mem.ReferenceName -eq $link)
+        {
+             #Write-Host("found " + $Member.Name+ " "+ $mem.ReferenceName)
+             $pipleline = $ls.Name
+             $linkedService = $mem.ReferenceName
+             
+
+             if(!$plList.ContainsKey($pipleline) -and !$plList.ContainsValue($linkedService))
+             {
+                $plList.add($pipleline,$linkedService)
+             }
+        }
+        
+
+        
+        
+    }
+    
+   
+}
+$a = $a + 1
+}
+#$plList.GetType()
+#$plList.GetEnumerator() |   Select-Object -Property Key,Value |  Export-Csv -NoTypeInformation -Path $path
+$plList.GetEnumerator() | Select-Object -Property @{N='PipelineName';E={$_.Key}},@{N='LinkedService';E={$_.Value}} |
+        Export-Csv -NoTypeInformation -Path $path
+#| ForEach-Object{ [pscustomobject]$_ } | Export-CSV -Path $path -NoTypeInformation
+Write-Host("Done Writing")
