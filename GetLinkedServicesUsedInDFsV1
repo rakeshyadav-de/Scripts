@@ -1,0 +1,67 @@
+
+# Table name
+$tabName = “pipelines”
+ 
+# Create Table object
+$table = New-Object system.Data.DataTable “$tabName”
+ 
+# Define Columns
+$col1 = New-Object system.Data.DataColumn "Pipeline",([string])
+$col2 = New-Object system.Data.DataColumn "LinkedService",([string])
+ 
+# Add the Columns
+$table.columns.add($col1)
+$table.columns.add($col2)
+ 
+# configrations
+$path = "\file.csv" # change it to location where you want to store it.
+
+
+$resourceGroup = "" #initialize the resource group
+
+$dataFactoy = "" #initialize the datafactory to look into
+
+
+$plList = @{}
+$pipleline
+$linkedService
+
+$myList = Get-AzureRmDataFactoryV2Pipeline -ResourceGroupName $resourceGroup  -DataFactoryName $dataFactoy |   Select Name,@{Name='LinkedServices'; Expression={$_.Activities.LinkedServiceName}}
+
+#$myList
+
+#Write-Host("loop no "+ $a)
+foreach ($ls in $myList)
+ {
+    
+
+    foreach ($mem in $ls.LinkedServices)
+    {
+       
+             #Write-Host("found " + $Member.Name+ " "+ $mem.ReferenceName)
+           if($mem.ReferenceName -ne $null )   
+             
+             {
+             $pipleline = $ls.Name
+             $linkedService = $mem.ReferenceName
+             
+             $row = $table.NewRow()
+             $row."Pipeline" = $pipleline
+             $row."LinkedService" = $linkedService
+             $table.Rows.Add($row)
+             
+             }
+             
+        
+    }
+    
+   
+}
+# Display in new pop-up window
+$table | Out-GridView
+ 
+# Export to CSV
+$table | Export-Csv -Path $path -NoTypeInformation
+
+
+Write-Host("Done Writing")
